@@ -23,10 +23,41 @@ if(resp == "1") {
 }
 
 else if (resp == "2"){
+if(File.Exists(file)) {
+
 
     Console.WriteLine("Enter title of movie: ");
+    string movieTitle = Console.ReadLine();
+
+    StreamReader sr = new StreamReader(file);
+    line = sr.ReadLine();
+    var moviesIndex = line.IndexOf(",");
+
+    var movieString = line.Substring(2, moviesIndex);
+
+    Console.WriteLine(movieString);
+}
+
+    //StreamWriter sw = File.AppendText(file);
+
+    // if(file.Contains(movieTitle)) 
+    // {
+    //     Console.WriteLine("Movie already exists within file.");
+    // }
+    // try {
+
+    // } catch (Exception ex) {
+    //      Console.WriteLine("This movie already exists within file: " +  movieTitle);
+    //     return;
+           
+    //  }
+    
+    // if (movieTitle != file){
 
 
+    // } else {
+    //     Console.WriteLine("That movie already exists within the Movie Library. Please try again.");
+    // }
 
 }
 
