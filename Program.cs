@@ -1,65 +1,103 @@
-﻿// Download initial movie data file
-// Create movie Console Application to see all movies in the file and to add movies to the file Check for duplicate values!
-// Implement Exception Handling
-// Implement NLog framework
-string file = "movies.txt"; 
-string line;
-string? resp = Console.ReadLine();
+﻿using NLog;
+
+// See https://aka.ms/new-console-template for more information
+string path = Directory.GetCurrentDirectory() + "\\nlog.config";
+
+// create instance of Logger
+var logger = LogManager.LoadConfiguration(path).GetCurrentClassLogger();
+logger.Info("Program started");
+
+string scrubbedFile = FileScrubber.ScrubMovies("movies.csv");
+logger.Info(scrubbedFile);
+MovieFile movieFile = new MovieFile(scrubbedFile);
+
+string choice;
+
+Console.ForegroundColor = ConsoleColor.Green;
 do{
-Console.WriteLine("Welcome to the Movie Library!\n");
-Console.WriteLine("What would you like to do?");
-Console.WriteLine("1. View movies on file.");
-Console.WriteLine("2. Add a new movie?");
-Console.WriteLine("To exit press any key.");
-resp = Console.ReadLine();
+    Console.WriteLine("Movie Library");
+    Console.WriteLine("1. Add Movie");
+    Console.WriteLine("2. View all movies");
+    Console.WriteLine("3. Find movie");
 
-if(resp == "1") {
-    if (File.Exists(file))
-    {
-        string content = File.ReadAllText(file);
-       Console.WriteLine(content);
-    }
+    Console.WriteLine("Choose from the options above.\nAny other key to exit.");
+    choice = Console.ReadLine();
+    string genres;
+        if (choice == "1"){
+            Console.WriteLine("Would you like to add a movie? (Y/N)");
+            string resp = Console.ReadLine().ToUpper();
 
-}
+            if (resp != "Y") {break;}
 
-else if (resp == "2"){
-if(File.Exists(file)) {
+            Movie movie = new Movie();
+            Console.WriteLine("Enter title:");
+            movie.title = Console.ReadLine();
+            Console.WriteLine("Enter genre:");
+            genres = Console.ReadLine();
+            Console.WriteLine("Enter movie director:");
+            movie.director = Console.ReadLine();
+            Console.WriteLine("Enter run time: (h:m:s)");
+            movie.runningTime = TimeSpan.Parse(Console.ReadLine());
 
+        }
+        if (choice == "2") 
+        {
+            if(File.Exists(scrubbedFile))
+            {
+                StreamReader sr = new StreamReader(scrubbedFile);
+                while (!sr.EndOfStream)
+                {
+                    string line = sr.ReadLine();
 
-    Console.WriteLine("Enter title of movie: ");
-    string movieTitle = Console.ReadLine();
+                    string[] arr = line.Split(',');
 
-    StreamReader sr = new StreamReader(file);
-    line = sr.ReadLine();
-    var moviesIndex = line.IndexOf(",");
+                    Console.WriteLine("Movie ID: {0}, Movie Title: {1}, Genre: {2}, Director: {3}, Running time: {4}");
+                }
+                sr.Close();
+            }
+            else
+            {
+                Console.WriteLine("File does not exist.");
+            }
+        }
+        if (choice == "3")
+        {
+            Console.WriteLine("Search for movie? (Y/N).");
+            String response = Console.ReadLine().ToUpper();
 
-    var movieString = line.Substring(2, moviesIndex);
+            if (response != "Y") {break;}
 
-    Console.WriteLine(movieString);
-}
+            Console.WriteLine("Enter search option (title/date/genre):");
+           string option = Console.ReadLine();
 
-    //StreamWriter sw = File.AppendText(file);
+            if (option == "title" || option == "date")
+            {
+                Console.WriteLine("Enter title/date to search:");
+                string titleDate = Console.ReadLine();
+                var Movies = movieFile.Movies.Where(m => m.title.Contains(titleDate));
+                Console.WriteLine($"There are {Movies.Count()} movies with {titleDate} in the title:");
+                foreach(Movie m in Movies) 
+                {
+                    Console.WriteLine($" {m.title}");
+                }
+            }
+            if(option == "genre")
+            {
+                Console.WriteLine("Enter genre to search for: ");
+                string searchGenre = Console.ReadLine();
+                var Movies = movieFile.Movies.Where(m => m.genres.Contains(searchGenre));
+                Console.WriteLine($"There are {Movies.Count()} movies within {searchGenre} genre: ");
 
-    // if(file.Contains(movieTitle)) 
-    // {
-    //     Console.WriteLine("Movie already exists within file.");
-    // }
-    // try {
+                foreach(Movie g in Movies)
+                {
+                    Console.WriteLine($" {g.title}");
+                }
+            }
+            
+        }
 
-    // } catch (Exception ex) {
-    //      Console.WriteLine("This movie already exists within file: " +  movieTitle);
-    //     return;
-           
-    //  }
-    
-    // if (movieTitle != file){
+}while (choice == "1"||choice == "2"||choice == "3");
 
+Console.ForegroundColor = ConsoleColor.White;
 
-    // } else {
-    //     Console.WriteLine("That movie already exists within the Movie Library. Please try again.");
-    // }
-
-}
-
-}while (resp == "1" || resp == "2");
-//parsing is sifting through the data take a value to pull it to the console.
+logger.Info("Program ended");
